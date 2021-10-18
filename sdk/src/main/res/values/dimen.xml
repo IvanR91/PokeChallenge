@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="space_medium">24dp</dimen>
+	<dimen name="space_small">16dp</dimen>
+
+	<dimen name="text_medium">16sp</dimen>
+
+	<dimen name="image_square_small">200dp</dimen>
+</resources>
