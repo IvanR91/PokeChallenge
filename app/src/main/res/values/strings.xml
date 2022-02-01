@@ -1,3 +1,5 @@
 <resources>
 	<string name="app_name">PokeChallenge</string>
+	<string name="search_label">Search</string>
+	<string name="search_hint">Pokemon name</string>
 </resources>

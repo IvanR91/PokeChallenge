@@ -25,5 +25,5 @@ object EnvironmentModule {
     @Singleton
     @Provides
     fun provideIOScheduler(): Scheduler =
-        Schedulers.single()
+        Schedulers.io()
 }

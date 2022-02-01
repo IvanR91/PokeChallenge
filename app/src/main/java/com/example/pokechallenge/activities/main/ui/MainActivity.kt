@@ -1,15 +1,18 @@
-package com.example.pokechallenge.activities
+package com.example.pokechallenge.activities.main.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import com.example.pokechallenge.activities.MainActivityViewModel.SearchState.Clear
-import com.example.pokechallenge.activities.MainActivityViewModel.SearchState.Loaded
 import com.example.pokechallenge.PokemonUISDKInterface
+import com.example.pokechallenge.activities.main.logic.MainActivityViewModel
+import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.None
+import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.Pokemon
 import com.example.pokechallenge.databinding.ActivityMainBinding
 import com.google.android.material.snackbar.Snackbar
+import com.jakewharton.rxbinding4.view.clicks
+import com.jakewharton.rxbinding4.widget.textChanges
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.Disposable
@@ -31,45 +34,42 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        binding.searchView.setIconifiedByDefault(false)
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                binding.searchView.clearFocus()
-                viewModel.clickSearchButton(query)
-                return true
-            }
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                return true
-            }
-        })
     }
 
     override fun onStart() {
         super.onStart()
 
-        uiDisposable = viewModel.observableUI.observeOn(AndroidSchedulers.mainThread())
+        Log.d("flow", "subscription")
+        uiDisposable = viewModel.attachObservables(
+            binding.btnSearch.clicks(),
+            binding.editSearch.textChanges()
+        )
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
 
-                binding.progress.visibility =
-                    if (it.showLoading) View.VISIBLE
-                    else View.GONE
+                binding.btnSearch.isEnabled = it.isButtonEnabled
 
-                when (it.searchState) {
-                    is Loaded -> {
+                if (it.showLoading) {
+                    binding.progress.visibility = View.VISIBLE
+                    binding.btnSearch.visibility = View.INVISIBLE
+                } else {
+                    binding.progress.visibility = View.GONE
+                    binding.btnSearch.visibility = View.VISIBLE
+                }
+
+                when (it.pokemonDisplayed) {
+                    None -> binding.scrollContainer.removeAllViews()
+                    is Pokemon -> {
                         binding.scrollContainer.removeAllViews()
 
                         binding.scrollContainer.addView(
                             pokemonSDK.createLayoutFrom(
                                 this,
-                                it.searchState.sprite,
-                                it.searchState.description
+                                it.pokemonDisplayed.imageURL,
+                                it.pokemonDisplayed.description
                             )
                         )
                     }
-
-                    Clear -> binding.scrollContainer.removeAllViews()
                 }
             }
 
@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        Log.d("flow", "dispose")
         uiDisposable?.dispose()
         errorDisposable?.dispose()
         super.onStop()
