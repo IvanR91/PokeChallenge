@@ -4,9 +4,11 @@ import java.net.URL
 
 sealed class MainActivityStateChangeAction {
 
-    object ErrorOccurred : MainActivityStateChangeAction()
+    object OnStart : MainActivityStateChangeAction()
 
     object SearchExecuted : MainActivityStateChangeAction()
+
+    data class ErrorOccurred(val errorText: String) : MainActivityStateChangeAction()
 
     data class TextModified(val text: String) : MainActivityStateChangeAction()
 

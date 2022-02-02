@@ -3,6 +3,7 @@ package com.example.pokechallenge.activities.main.logic
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.pokechallenge.activities.main.logic.MainActivityStateChangeAction.*
+import com.example.pokechallenge.activities.main.logic.MainActivityViewState.ErrorStatus
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.None
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.Pokemon
 import com.jakewharton.rxbinding4.InitialValueObservable
@@ -18,21 +19,18 @@ class MainActivityViewModel @Inject constructor(
     private val ioScheduler: Scheduler
 ) : ViewModel() {
 
-    private val subjectError = PublishSubject.create<String>()
-    val observableError: Observable<String> = subjectError
-
     private var currentState = MainActivityViewState(
         showLoading = false,
         editTextString = "",
-        pokemonDisplayed = None
+        pokemonDisplayed = None,
+        errorStatus = ErrorStatus.None
     )
 
     fun attachObservables(
         clicks: Observable<Unit>,
-        textChanges: InitialValueObservable<CharSequence>
+        textChanges: Observable<CharSequence>
     ): Observable<MainActivityViewState> {
         val modifyTextObservable = textChanges
-            .skipInitialValue()
             .map { TextModified(it.toString()) }
 
         val clickObservable = clicks
@@ -41,17 +39,18 @@ class MainActivityViewModel @Inject constructor(
                 searchPokemonInfoUseCase.execute(currentState.editTextString)
                     .subscribeOn(ioScheduler)
                     .toObservable()
-                    .doOnError { throwable -> subjectError.onNext(throwable.message) }
                     .map<MainActivityStateChangeAction> {
                         SearchDone(sprite = it.first, description = it.second)
                     }
-                    .onErrorResumeNext { Observable.just(ErrorOccurred) }
+                    .onErrorResumeNext {
+                        Observable.just(ErrorOccurred(it.message ?: "Generic error"))
+                    }
                     .startWith(Observable.just(SearchExecuted))
             }
 
         return Observable.merge(modifyTextObservable, clickObservable)
+            .startWith(Observable.just(OnStart))
             .map {
-                Log.d("flow", "handling new action $it")
                 when (it) {
                     is SearchDone -> currentState.copy(
                         showLoading = false,
@@ -65,7 +64,12 @@ class MainActivityViewModel @Inject constructor(
 
                     is TextModified -> currentState.copy(editTextString = it.text)
 
-                    ErrorOccurred -> currentState.copy(showLoading = false)
+                    is ErrorOccurred -> currentState.copy(
+                        showLoading = false,
+                        errorStatus = ErrorStatus.Show(it.errorText)
+                    )
+
+                    OnStart -> currentState.copy(errorStatus = ErrorStatus.None)
                 }
             }
             .doOnNext { currentState = it }

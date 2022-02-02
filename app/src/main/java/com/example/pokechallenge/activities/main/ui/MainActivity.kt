@@ -7,6 +7,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.pokechallenge.PokemonUISDKInterface
 import com.example.pokechallenge.activities.main.logic.MainActivityViewModel
+import com.example.pokechallenge.activities.main.logic.MainActivityViewState.ErrorStatus
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.None
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.Pokemon
 import com.example.pokechallenge.databinding.ActivityMainBinding
@@ -25,7 +26,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
     private var uiDisposable: Disposable? = null
-    private var errorDisposable: Disposable? = null
 
     @Inject
     lateinit var pokemonSDK: PokemonUISDKInterface
@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("flow", "subscription")
         uiDisposable = viewModel.attachObservables(
             binding.btnSearch.clicks(),
-            binding.editSearch.textChanges()
+            binding.editSearch.textChanges().skipInitialValue()
         )
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
@@ -71,18 +71,24 @@ class MainActivity : AppCompatActivity() {
                         )
                     }
                 }
-            }
 
-        errorDisposable = viewModel.observableError.observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                Snackbar.make(findViewById(android.R.id.content), it, Snackbar.LENGTH_SHORT).show()
+                when (it.errorStatus) {
+                    is ErrorStatus.Show ->
+                        Snackbar.make(
+                            findViewById(android.R.id.content),
+                            it.errorStatus.message,
+                            Snackbar.LENGTH_SHORT
+                        )
+                            .show()
+
+                    ErrorStatus.None -> Unit
+                }
             }
     }
 
     override fun onStop() {
         Log.d("flow", "dispose")
         uiDisposable?.dispose()
-        errorDisposable?.dispose()
         super.onStop()
     }
 }
