@@ -39,13 +39,15 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        Log.d("flow", "subscription")
+        Log.d("DEBUG", "Subscribe observables")
         uiDisposable = viewModel.attachObservables(
             binding.btnSearch.clicks(),
             binding.editSearch.textChanges().skipInitialValue()
         )
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
+
+                Log.d("DEBUG", "New state received -> $it")
 
                 binding.btnSearch.isEnabled = it.isButtonEnabled
 
@@ -87,7 +89,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
-        Log.d("flow", "dispose")
+        Log.d("DEBUG", "Dispose observables")
         uiDisposable?.dispose()
         super.onStop()
     }
