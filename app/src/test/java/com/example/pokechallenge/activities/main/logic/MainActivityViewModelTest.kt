@@ -2,6 +2,7 @@ package com.example.pokechallenge.activities.main.logic
 
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.ErrorStatus
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed
+import com.example.pokechallenge.models.PokemonModel
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.reactivex.rxjava3.core.Observable
@@ -101,8 +102,7 @@ class MainActivityViewModelTest : FunSpec({
                 editTextString = "daoc",
                 showLoading = false,
                 pokemonDisplayed = PokemonDisplayed.Pokemon(
-                    imageURL = urlExpected,
-                    description = descriptionExpected
+                    PokemonModel(urlExpected, descriptionExpected)
                 )
             )
         )

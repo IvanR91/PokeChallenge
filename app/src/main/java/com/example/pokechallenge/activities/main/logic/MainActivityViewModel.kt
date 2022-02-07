@@ -1,16 +1,14 @@
 package com.example.pokechallenge.activities.main.logic
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.pokechallenge.activities.main.logic.MainActivityStateChangeAction.*
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.ErrorStatus
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.None
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.Pokemon
-import com.jakewharton.rxbinding4.InitialValueObservable
+import com.example.pokechallenge.models.PokemonModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
-import io.reactivex.rxjava3.subjects.PublishSubject
 import javax.inject.Inject
 
 @HiltViewModel
@@ -40,7 +38,7 @@ class MainActivityViewModel @Inject constructor(
                     .subscribeOn(ioScheduler)
                     .toObservable()
                     .map<MainActivityStateChangeAction> {
-                        SearchDone(sprite = it.first, description = it.second)
+                        SearchDone(PokemonModel(image = it.first, description = it.second))
                     }
                     .onErrorResumeNext {
                         Observable.just(ErrorOccurred(it.message ?: "Generic error"))
@@ -54,15 +52,19 @@ class MainActivityViewModel @Inject constructor(
                 when (it) {
                     is SearchDone -> currentState.copy(
                         showLoading = false,
-                        pokemonDisplayed = Pokemon(
-                            imageURL = it.sprite,
-                            description = it.description
-                        )
+                        pokemonDisplayed = Pokemon(it.pokemon),
+                        errorStatus = ErrorStatus.None
                     )
 
-                    SearchExecuted -> currentState.copy(showLoading = true)
+                    SearchExecuted -> currentState.copy(
+                        showLoading = true,
+                        errorStatus = ErrorStatus.None
+                    )
 
-                    is TextModified -> currentState.copy(editTextString = it.text)
+                    is TextModified -> currentState.copy(
+                        editTextString = it.text,
+                        errorStatus = ErrorStatus.None
+                    )
 
                     is ErrorOccurred -> currentState.copy(
                         showLoading = false,

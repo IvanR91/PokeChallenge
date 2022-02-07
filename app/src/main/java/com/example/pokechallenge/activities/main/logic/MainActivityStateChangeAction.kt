@@ -1,6 +1,6 @@
 package com.example.pokechallenge.activities.main.logic
 
-import java.net.URL
+import com.example.pokechallenge.models.PokemonModel
 
 sealed class MainActivityStateChangeAction {
 
@@ -12,8 +12,5 @@ sealed class MainActivityStateChangeAction {
 
     data class TextModified(val text: String) : MainActivityStateChangeAction()
 
-    data class SearchDone(
-        val sprite: URL,
-        val description: String
-    ) : MainActivityStateChangeAction()
+    data class SearchDone(val pokemon: PokemonModel) : MainActivityStateChangeAction()
 }

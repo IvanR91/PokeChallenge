@@ -67,8 +67,8 @@ class MainActivity : AppCompatActivity() {
                         binding.scrollContainer.addView(
                             pokemonSDK.createLayoutFrom(
                                 this,
-                                it.pokemonDisplayed.imageURL,
-                                it.pokemonDisplayed.description
+                                it.pokemonDisplayed.pokemon.image,
+                                it.pokemonDisplayed.pokemon.description
                             )
                         )
                     }

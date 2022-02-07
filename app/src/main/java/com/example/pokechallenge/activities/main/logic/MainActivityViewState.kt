@@ -1,6 +1,6 @@
 package com.example.pokechallenge.activities.main.logic
 
-import java.net.URL
+import com.example.pokechallenge.models.PokemonModel
 
 data class MainActivityViewState(
     val showLoading: Boolean,
@@ -13,7 +13,7 @@ data class MainActivityViewState(
 
     sealed class PokemonDisplayed {
         object None : PokemonDisplayed()
-        data class Pokemon(val imageURL: URL, val description: String) : PokemonDisplayed()
+        data class Pokemon(val pokemon: PokemonModel) : PokemonDisplayed()
     }
 
     sealed class ErrorStatus {
