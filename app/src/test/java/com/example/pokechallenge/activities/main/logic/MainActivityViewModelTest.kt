@@ -84,7 +84,7 @@ class MainActivityViewModelTest : FunSpec({
         val observer = TestObserver<MainActivityViewState>()
 
         whenever(useCase.execute(eq("daoc")))
-            .thenReturn(Single.just(urlExpected to descriptionExpected))
+            .thenReturn(Single.just(PokemonModel(urlExpected, descriptionExpected)))
 
         vm.attachObservables(
             clickObs,

@@ -5,7 +5,6 @@ import com.example.pokechallenge.activities.main.logic.MainActivityStateChangeAc
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.ErrorStatus
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.None
 import com.example.pokechallenge.activities.main.logic.MainActivityViewState.PokemonDisplayed.Pokemon
-import com.example.pokechallenge.models.PokemonModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.rxjava3.core.Observable
 import io.reactivex.rxjava3.core.Scheduler
@@ -37,9 +36,7 @@ class MainActivityViewModel @Inject constructor(
                 searchPokemonInfoUseCase.execute(currentState.editTextString)
                     .subscribeOn(ioScheduler)
                     .toObservable()
-                    .map<MainActivityStateChangeAction> {
-                        SearchDone(PokemonModel(image = it.first, description = it.second))
-                    }
+                    .map<MainActivityStateChangeAction> { SearchDone(it) }
                     .onErrorResumeNext {
                         Observable.just(ErrorOccurred(it.message ?: "Generic error"))
                     }

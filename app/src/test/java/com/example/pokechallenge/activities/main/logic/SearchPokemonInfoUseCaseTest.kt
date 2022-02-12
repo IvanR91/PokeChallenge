@@ -1,6 +1,7 @@
 package com.example.pokechallenge.activities.main.logic
 
 import com.example.pokechallenge.PokemonLogicInterface
+import com.example.pokechallenge.models.PokemonModel
 import com.example.pokechallenge.singleOrErrorGenerator
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -57,7 +58,7 @@ class SearchPokemonInfoUseCaseTest : FunSpec({
                 }
 
                 false -> observerResult.assertValue {
-                    it shouldBe (expectedUrl to expectedDescription)
+                    it shouldBe PokemonModel(expectedUrl, expectedDescription)
 
                     descriptionResult.test().values().size shouldBe 1
                     descriptionResult.test().values()[0] shouldBe expectedDescription

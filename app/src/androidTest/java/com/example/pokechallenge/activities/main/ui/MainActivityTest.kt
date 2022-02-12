@@ -116,7 +116,7 @@ class MainActivityTest {
     @Test
     fun checkSearchPokemonDisplayLoadingAndDismissLoadingAfterReturn() {
         `when`(pokemonLogicSDK.retrieveSpriteOf("Abra"))
-            .thenReturn(Single.timer(400, TimeUnit.MILLISECONDS).map { URL("") })
+            .thenReturn(Single.timer(1, TimeUnit.SECONDS).map { URL("") })
 
         `when`(pokemonLogicSDK.retrieveShakespeareDescriptionOf("Abra"))
             .thenReturn(Single.just("Abra description"))
@@ -129,13 +129,15 @@ class MainActivityTest {
         Espresso.onView(withId(R.id.btn_search))
             .perform(click())
 
+        Thread.sleep(500)
+
         Espresso.onView(withId(R.id.btn_search))
             .check(matches(not(isDisplayed())))
 
         Espresso.onView(withId(R.id.progress))
             .check(matches(isDisplayed()))
 
-        Thread.sleep(500)
+        Thread.sleep(1000)
 
         Espresso.onView(withId(R.id.btn_search))
             .check(matches(isDisplayed()))
