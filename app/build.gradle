@@ -48,7 +48,7 @@ android {
 
 dependencies {
 
-    def hiltVersion = "2.39.1"
+    def hiltVersion = "2.40.5"
     def junitVersion = "5.8.1"
     def kotestVersion = "4.6.3"
 

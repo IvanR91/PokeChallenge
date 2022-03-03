@@ -12,6 +12,3 @@ internal data class PokemonSpeciesResponse(
 
     data class Language(@JsonProperty("name") val name: String)
 }
-
-internal val PokemonSpeciesResponse.firstEnglishDescriptionOrNull
-    get() = flavorTextEntries.firstOrNull { it.language.name == "en" }

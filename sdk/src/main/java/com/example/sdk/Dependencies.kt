@@ -5,6 +5,7 @@ import com.example.sdk.api.ShakespeareAPI
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.reactivex.rxjava3.core.Scheduler
+import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -44,12 +45,12 @@ internal object Dependencies {
             .build()
             .create(ShakespeareAPI::class.java)
 
-    val urlValidator: (String?) -> URL? by lazy {
+    val urlValidator: (String?) -> Single<URL> by lazy {
         {
             try {
-                URL(it)
+                Single.just(URL(it))
             } catch (ex: Exception) {
-                null
+                Single.error(ex)
             }
         }
     }
