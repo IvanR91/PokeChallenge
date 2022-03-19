@@ -16,16 +16,11 @@ class MainActivityViewModel @Inject constructor(
     private val ioScheduler: Scheduler
 ) : ViewModel() {
 
-    private var currentState = MainActivityViewState(
-        showLoading = false,
-        editTextString = "",
-        pokemonDisplayed = None,
-        errorStatus = ErrorStatus.None
-    )
+    private var currentState = startingState
 
     fun attachObservables(
         clicks: Observable<Unit>,
-        textChanges: Observable<CharSequence>
+        textChanges: Observable<String>
     ): Observable<MainActivityViewState> {
         val modifyTextObservable = textChanges
             .map { TextModified(it.toString()) }
@@ -72,5 +67,14 @@ class MainActivityViewModel @Inject constructor(
                 }
             }
             .doOnNext { currentState = it }
+    }
+
+    companion object {
+        val startingState = MainActivityViewState(
+            showLoading = false,
+            editTextString = "",
+            pokemonDisplayed = None,
+            errorStatus = ErrorStatus.None
+        )
     }
 }

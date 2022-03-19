@@ -15,12 +15,12 @@ object EnvironmentModule {
     @Singleton
     @Provides
     fun providePokemonUISDK(): PokemonUISDKInterface =
-        PokemonSDK()
+        PokemonSDK
 
     @Singleton
     @Provides
     fun providePokemonLogicSDK(): PokemonLogicInterface =
-        PokemonSDK()
+        PokemonSDK
 
     @Singleton
     @Provides

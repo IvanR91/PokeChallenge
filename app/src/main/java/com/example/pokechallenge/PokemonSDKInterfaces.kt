@@ -23,4 +23,4 @@ interface PokemonLogicInterface {
         SdkCore.retrieveShakespeareDescriptionOf(pokemon)
 }
 
-class PokemonSDK : PokemonUISDKInterface, PokemonLogicInterface
+object PokemonSDK : PokemonUISDKInterface, PokemonLogicInterface

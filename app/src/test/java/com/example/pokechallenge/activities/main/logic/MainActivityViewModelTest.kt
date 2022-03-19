@@ -35,7 +35,7 @@ class MainActivityViewModelTest : FunSpec({
         val vm = MainActivityViewModel(useCase, trampoline())
 
         val clickObs = Observable.create<Unit> { }
-        val textObs = PublishSubject.create<CharSequence>()
+        val textObs = PublishSubject.create<String>()
 
         val observer = TestObserver<MainActivityViewState>()
 
@@ -61,7 +61,7 @@ class MainActivityViewModelTest : FunSpec({
         val vm = MainActivityViewModel(useCase, trampoline())
 
         val clickObs = PublishSubject.create<Unit>()
-        val textObs = PublishSubject.create<CharSequence>()
+        val textObs = PublishSubject.create<String>()
 
         val observer = TestObserver<MainActivityViewState>()
 
@@ -79,7 +79,7 @@ class MainActivityViewModelTest : FunSpec({
         val vm = MainActivityViewModel(useCase, trampoline())
 
         val clickObs = PublishSubject.create<Unit>()
-        val textObs = PublishSubject.create<CharSequence>()
+        val textObs = PublishSubject.create<String>()
 
         val observer = TestObserver<MainActivityViewState>()
 
@@ -112,7 +112,7 @@ class MainActivityViewModelTest : FunSpec({
         val vm = MainActivityViewModel(useCase, trampoline())
 
         val clickObs = PublishSubject.create<Unit>()
-        val textObs = PublishSubject.create<CharSequence>()
+        val textObs = PublishSubject.create<String>()
 
         val observer = TestObserver<MainActivityViewState>()
         val observer2 = TestObserver<MainActivityViewState>()

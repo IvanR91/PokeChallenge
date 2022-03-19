@@ -4,14 +4,18 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.test.*
+import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.core.view.get
 import androidx.core.view.isVisible
 import androidx.test.core.app.ActivityScenario
 import androidx.test.espresso.Espresso
-import androidx.test.espresso.action.ViewActions.*
-import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
-import com.example.pokechallenge.*
+import com.example.pokechallenge.EnvironmentModule
+import com.example.pokechallenge.PokemonLogicInterface
+import com.example.pokechallenge.PokemonSDK
+import com.example.pokechallenge.PokemonUISDKInterface
 import com.example.pokechallenge.activities.main.ui.MainActivityTest.TestSingletonComponent.pokemonLogicSDK
 import dagger.Module
 import dagger.Provides
@@ -23,7 +27,7 @@ import dagger.hilt.components.SingletonComponent
 import io.reactivex.rxjava3.core.Scheduler
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.schedulers.Schedulers
-import org.hamcrest.core.IsNot.not
+import org.hamcrest.Matchers
 import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mockito.`when`
@@ -37,7 +41,6 @@ import javax.inject.Singleton
 @HiltAndroidTest
 class MainActivityTest {
 
-
     @Module
     @InstallIn(SingletonComponent::class)
     object TestSingletonComponent {
@@ -47,7 +50,7 @@ class MainActivityTest {
         @Singleton
         @Provides
         fun providePokemonUISDK(): PokemonUISDKInterface =
-            PokemonSDK()
+            PokemonSDK
 
         @Singleton
         @Provides
@@ -63,87 +66,97 @@ class MainActivityTest {
     @get:Rule
     var hiltRule = HiltAndroidRule(this)
 
+    @get:Rule
+    val composeTestRule = createComposeRule()
+
     @Test
     fun checkButtonEnableBasedOnText() {
         ActivityScenario.launch(MainActivity::class.java)
 
-        Espresso.onView(withId(R.id.btn_search))
-            .check(matches(isDisplayed()))
-            .check(matches(isNotEnabled()))
+        composeTestRule.onNodeWithText("SEARCH")
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
 
-        Espresso.onView(withId(R.id.edit_search))
-            .perform(typeText("Abra"))
+        composeTestRule.onNodeWithText("")
+            .performTextInput("Abra")
 
-        Espresso.onView(withId(R.id.btn_search))
-            .check(matches(isDisplayed()))
-            .check(matches(isEnabled()))
+        composeTestRule.onNodeWithText("SEARCH")
+            .assertIsDisplayed()
+            .assertIsEnabled()
 
-        Espresso.onView(withId(R.id.edit_search))
-            .perform(replaceText(""))
+        composeTestRule.onNodeWithText("Abra")
+            .performTextClearance()
 
-        Espresso.onView(withId(R.id.btn_search))
-            .check(matches(isDisplayed()))
-            .check(matches(isNotEnabled()))
+        composeTestRule.onNodeWithText("SEARCH")
+            .assertIsDisplayed()
+            .assertIsNotEnabled()
     }
 
     @Test
     fun checkSearchPokemonDisplayImageAndText() {
-        `when`(pokemonLogicSDK.retrieveSpriteOf("Abra"))
+        `when`(pokemonLogicSDK.retrieveSpriteOf("Ivysaur"))
             .thenReturn(Single.just(URL("https://img.pokemondb.net/artwork/large/ivysaur.jpg")))
 
-        `when`(pokemonLogicSDK.retrieveShakespeareDescriptionOf("Abra"))
-            .thenReturn(Single.just("Abra description"))
+        `when`(pokemonLogicSDK.retrieveShakespeareDescriptionOf("Ivysaur"))
+            .thenReturn(Single.just("Ivysaur description"))
 
         ActivityScenario.launch(MainActivity::class.java)
 
-        Espresso.onView(withId(R.id.edit_search))
-            .perform(typeText("Abra"))
+        composeTestRule.onNodeWithText("")
+            .performTextInput("Ivysaur")
 
-        Espresso.onView(withId(R.id.btn_search))
-            .perform(click())
+        composeTestRule.onNodeWithText("SEARCH")
+            .performClick()
 
-        Espresso.onView(withId(R.id.scroll_container))
+        Espresso.onView(withTagValue(Matchers.`is`("frame_layout")))
             .check { view, _ ->
                 val linearLayout = (view as ViewGroup)[0] as LinearLayoutCompat
 
                 assert(linearLayout.isVisible)
                 assert((linearLayout[0] as ImageView).isVisible)
                 assert((linearLayout[2] as TextView).isVisible)
-                assert((linearLayout[2] as TextView).text == "Abra description")
+                assert((linearLayout[2] as TextView).text == "Ivysaur description")
             }
     }
 
     @Test
     fun checkSearchPokemonDisplayLoadingAndDismissLoadingAfterReturn() {
         `when`(pokemonLogicSDK.retrieveSpriteOf("Abra"))
-            .thenReturn(Single.timer(1, TimeUnit.SECONDS).map { URL("") })
+            .thenReturn(Single.timer(1, TimeUnit.SECONDS).map { URL("https://img.pokemondb.net") })
 
         `when`(pokemonLogicSDK.retrieveShakespeareDescriptionOf("Abra"))
             .thenReturn(Single.just("Abra description"))
 
         ActivityScenario.launch(MainActivity::class.java)
 
-        Espresso.onView(withId(R.id.edit_search))
-            .perform(typeText("Abra"))
+        composeTestRule.onNodeWithText("")
+            .performTextInput("Abra")
 
-        Espresso.onView(withId(R.id.btn_search))
-            .perform(click())
+        composeTestRule.onNodeWithText("SEARCH")
+            .performClick()
 
         Thread.sleep(500)
 
-        Espresso.onView(withId(R.id.btn_search))
-            .check(matches(not(isDisplayed())))
+        composeTestRule.onNodeWithText("SEARCH")
+            .assertDoesNotExist()
 
-        Espresso.onView(withId(R.id.progress))
-            .check(matches(isDisplayed()))
+        val rangeInfo = ProgressBarRangeInfo(
+            current = 0F,
+            range = 0F..0F,
+            steps = 0
+        )
+
+        composeTestRule.onNode(hasProgressBarRangeInfo(rangeInfo))
+            .assertIsDisplayed()
 
         Thread.sleep(1000)
 
-        Espresso.onView(withId(R.id.btn_search))
-            .check(matches(isDisplayed()))
+        composeTestRule.onNodeWithText("SEARCH")
+            .assertIsDisplayed()
+            .assertIsEnabled()
 
-        Espresso.onView(withId(R.id.progress))
-            .check(matches(not(isDisplayed())))
+        composeTestRule.onNode(hasProgressBarRangeInfo(rangeInfo))
+            .assertDoesNotExist()
     }
 
     @Test
@@ -156,14 +169,15 @@ class MainActivityTest {
 
         ActivityScenario.launch(MainActivity::class.java)
 
-        Espresso.onView(withId(R.id.edit_search))
-            .perform(typeText("Abra"))
+        composeTestRule.onNodeWithText("")
+            .performTextInput("Abra")
 
-        Espresso.onView(withId(R.id.btn_search))
-            .perform(click())
+        composeTestRule.onNodeWithText("SEARCH")
+            .performClick()
 
-        Espresso.onView(withId(com.google.android.material.R.id.snackbar_text))
-            .check(matches(isDisplayed()))
-            .check(matches(withText("Error occurred")))
+        Thread.sleep(50)
+
+        composeTestRule.onNodeWithText("Error occurred")
+            .assertIsDisplayed()
     }
 }
